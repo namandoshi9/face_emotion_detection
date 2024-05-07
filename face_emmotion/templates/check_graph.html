@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Analysis </h1>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<body>
+    <canvas id="emotionChart" width="800" height="400"></canvas>
+
+    <script>
+        // Extract chart data from Django view
+        const chartData = {{ chart_data| safe }};
+
+        // Extract labels and datasets
+        const labels = chartData.labels;
+        const datasets = chartData.datasets;
+
+        // Create a new Chart instance
+        const ctx = document.getElementById('emotionChart').getContext('2d');
+        const emotionChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+{% endblock %}

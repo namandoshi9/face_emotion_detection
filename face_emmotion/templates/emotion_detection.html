@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    #container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        /* Align items to the top */
+        width: 100%;
+        height: 80%;
+        border: 2px solid #ccc;
+        border-left: 10px solid red;
+        box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.1);
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    #camera {
+        width: 45%;
+        height: auto;
+    }
+
+    #emotion-analysis {
+        width: 45%;
+        height: auto;
+        padding-left: 20px;
+    }
+
+    #captured-image {
+        width: 83%;
+        /* Adjusted width */
+        height: auto;
+        max-height: 90vh;
+        margin-left: 65px;
+        border-radius: 5px
+    }
+
+    .progress-bar {
+        height: 20px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        /* Add border to the progress bar */
+        box-sizing: border-box;
+        /* Include border in the width calculation */
+        width: 100%;
+        /* Set width to 100% */
+    }
+
+    /* Adjust border color based on emotion */
+    .progress-bar.happy {
+        border-color: green;
+    }
+
+    .progress-bar.angry {
+        border-color: red;
+    }
+
+    .progress-bar.sad {
+        border-color: blue;
+    }
+
+    .progress-bar.surprise {
+        border-color: orange;
+    }
+
+    .progress-bar.fear {
+        border-color: purple;
+    }
+
+    .progress-bar.neutral {
+        border-color: gray;
+    }
+</style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="camera">
+            <video id="video" autoplay></video>
+            <button onclick="captureAndAnalyze()">Capture Image</button>
+        </div>
+        <div id="emotion-analysis">
+            <img id="captured-image" src="" alt="Captured Image">
+            <h2 style="margin: 17px 0 0 61px;">Emotion Analysis</h2>
+            <ul style="margin: 17px 0 0 55px;" id="emotion-result">
+                <!-- Emotion analysis result will be displayed here -->
+                <!-- <li>Happy: <span>{{ last_data.happy }}</span></li>
+                <li>Anger: <span>{{ last_data.anger }}</span></li>
+                <li>Surprise: <span>{{ last_data.surprise }}</span></li>
+                <li>Neutral: <span>{{ last_data.neutral }}</span></li>
+                <li>Fear: <span>{{ last_data.fear }}</span></li>
+                <li>Sad: <span>{{ last_data.sad }}</span></li> -->
+                <!-- Replace 'emotion' with the name of the field in your EmotionDetection model -->
+            </ul>
+            <div id="no-face-message" style="display: none; color: red; margin-top: 10px; margin-left: 55px;">
+                No face detected in the captured image.
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.createElement('canvas');
+        let context = canvas.getContext('2d');
+
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Error accessing webcam: ', err);
+            }
+        }
+
+        // async function captureAndAnalyze() {
+        //     // Capture image from the video stream
+        //     context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        //     let imageDataURL = canvas.toDataURL('image/png');
+        //     document.getElementById('captured-image').src = imageDataURL;
+
+        //     // Send captured image for analysis
+        //     try {
+        //         let response = await fetch('/capture-and-analyze/', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/x-www-form-urlencoded',
+        //                 'X-CSRFToken': getCookie('csrftoken')
+        //             },
+        //             body: 'image_data=' + encodeURIComponent(imageDataURL),
+        //         });
+        //         let data = await response.json();
+
+        //         // Update HTML with emotion analysis results
+        //         displayEmotions(data.emotions);
+
+        //         // Log emotion analysis results to the console
+        //         console.log('Emotion Analysis Result:', data.emotions);
+        //     } catch (err) {
+        //         console.error('Error sending image for analysis: ', err);
+        //     }
+        // }
+
+        // function displayEmotions(emotions) {
+        //     let emotionList = document.getElementById('emotion-result');
+        //     emotionList.innerHTML = ''; // Clear previous entries
+
+        //     emotions.forEach(function (emotionData) {
+        //         let emotionItem = document.createElement('li');
+        //         let emotionAnalysis = '<strong>Emotion Analysis:</strong><br>';
+        //         for (let emotionKey in emotionData) {
+        //             let emotionValue = emotionData[emotionKey];
+        //             emotionAnalysis += `${emotionKey}: ${emotionValue.toFixed(2)}%<br>`;
+        //         }
+        //         emotionItem.innerHTML = emotionAnalysis;
+        //         emotionList.appendChild(emotionItem);
+        //     });
+
+        //     document.getElementById('captured-image-container').style.display = 'block'; // Show captured image container
+        // }
+
+        async function captureAndAnalyze() {
+            // Capture image from the video stream
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let imageDataURL = canvas.toDataURL('image/png');
+            document.getElementById('captured-image').src = imageDataURL;
+
+            // Send captured image for analysis
+            try {
+                let response = await fetch('/capture-and-analyze/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: 'image_data=' + encodeURIComponent(imageDataURL),
+                });
+                let data = await response.json();
+
+                // Check if emotions array is empty
+                if (data.emotions.length === 0) {
+                    // No faces detected, display message
+                    document.getElementById('no-face-message').style.display = 'block';
+                } else {
+                    // Faces detected, update HTML with emotion analysis results
+                    displayEmotions(data.emotions);
+                    // Log emotion analysis results to the console
+                    console.log('Emotion Analysis Result:', data.emotions);
+                }
+            } catch (err) {
+                console.error('Error sending image for analysis: ', err);
+            }
+        }
+
+
+
+        // function displayEmotions(emotions) {
+        //     let emotionList = document.getElementById('emotion-result');
+        //     emotionList.innerHTML = ''; // Clear previous entries
+
+        //     if (emotions.length === 0) {
+        //         // No faces detected, display message
+        //         document.getElementById('no-face-message').style.display = 'block';
+        //         return; // Exit function
+        //     }
+
+        //     for (let emotionKey in emotions[0]) {
+        //         let emotionValue = emotions[0][emotionKey];
+        //         let progressBar = document.createElement('div');
+        //         progressBar.classList.add('progress-bar');
+        //         progressBar.classList.add(emotionKey.toLowerCase()); // Add class for emotion-specific styling
+        //         progressBar.style.width = `${emotionValue}%`;
+        //         progressBar.textContent = `${emotionKey}: ${emotionValue.toFixed(2)}%`;
+        //         emotionList.appendChild(progressBar);
+        //     }
+
+        //     document.getElementById('captured-image-container').style.display = 'block'; // Show captured image container
+        //     // Hide the "No face detected" message if faces are detected
+        //     document.getElementById('no-face-message').style.display = 'none';
+        // }
+
+
+        function displayEmotions(emotions) {
+            let emotionList = document.getElementById('emotion-result');
+            emotionList.innerHTML = ''; // Clear previous entries
+
+            if (emotions.length === 0) {
+                // No faces detected, display message
+                document.getElementById('no-face-message').style.display = 'block';
+                return; // Exit function
+            }
+
+            for (let emotionKey in emotions[0]) {
+                let emotionValue = emotions[0][emotionKey];
+
+                // Create a container for each emotion entry
+                let emotionContainer = document.createElement('div');
+                emotionContainer.classList.add('emotion-entry');
+
+                // Create a span element for the emotion key-value pair
+                let emotionKeyValue = document.createElement('span');
+                emotionKeyValue.textContent = `${emotionKey}: ${emotionValue.toFixed(2)}%`;
+                emotionContainer.appendChild(emotionKeyValue);
+
+                // Create a progress bar for the emotion
+                let progressBar = document.createElement('div');
+                progressBar.classList.add('progress-bar');
+                progressBar.classList.add(emotionKey.toLowerCase()); // Add class for emotion-specific styling
+                progressBar.style.width = `${emotionValue}%`;
+                emotionContainer.appendChild(progressBar);
+
+                emotionList.appendChild(emotionContainer);
+            }
+
+            document.getElementById('captured-image-container').style.display = 'block'; // Show captured image container
+            // Hide the "No face detected" message if faces are detected
+            document.getElementById('no-face-message').style.display = 'none';
+        }
+
+
+        function getColor(emotionKey) {
+            // Define colors for different emotions
+            const colors = {
+                happy: '#4caf50',    // Green
+                angry: '#f44336',    // Red
+                surprise: '#ffeb3b', // Yellow
+                neutral: '#9e9e9e',  // Grey
+                fear: '#2196f3',     // Blue
+                sad: '#673ab7'       // Purple
+            };
+            return colors[emotionKey] || '#000'; // Default color
+        }
+
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        initCamera();
+    </script>
+    {% endblock %}

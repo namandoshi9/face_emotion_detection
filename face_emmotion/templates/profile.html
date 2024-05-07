@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    User Profile
+{% endblock %}
+
+{% block content %}
+
+    <style>
+        /* Style for the table */
+        .profile-table {
+            border-collapse: collapse;
+            width: 50%;
+        }
+
+        /* Style for table cells */
+        .profile-table td {
+            padding: 8px;
+            text-align: left;
+            border: none; /* Remove border */
+        }
+
+        /* Style for table headers */
+        .profile-table th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            /* background-color: #f2f2f2; */
+            color: black;
+            border: none; /* Remove border */
+        }
+    </style>
+
+    <div class="container">
+        <div class="profile-container">
+            <table class="profile-table">
+                
+                    <h1>{{ user.username }}</h1>
+        
+                <tr>
+                    <th>Email: </th>
+                    <td>{{ user.email }}</td>
+                </tr>
+                <tr>
+                    <th>Full Name: </th>
+                    <td>{{ user.fullname }}</td>
+                </tr>
+                <tr>
+                    <th>Age: </th>
+                    <td>{{ user.age }}</td>
+                </tr>
+                <tr>
+                    <th>Gender: </th>
+                    <td>{{ user.gender }}</td>
+                </tr>
+                <tr>
+                    <th>Mobile: </th>
+                    <td>{{ user.mobile }}</td>
+                </tr>
+                <tr>
+                    <th>Address: </th>
+                    <td>{{ user.address }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+{% endblock %}

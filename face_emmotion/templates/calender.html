@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Calendar
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="mb-4">Calendar</h1>
+        <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://calendar.google.com/calendar/embed?src=YOUR_GOOGLE_CALENDAR_ID_HERE" frameborder="0" scrolling="no"></iframe>
+        </div>
+    </div>
+{% endblock %}
